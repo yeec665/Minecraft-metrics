@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset='utf-8'/>
+        <title>Minecraft-metrics</title>
+        <style>
+            body {
+                display: -webkit-flex;
+                display: flex;
+                flex-direction: column;
+                flex-wrap: wrap;
+                justify-content: space-around;
+                align-items: stretch;
+                align-content: space-around;
+            }
+            div {
+                align: center;
+            }
+            #svg-pane {
+                flex-grow: 1;
+                flex-basis: 80vmin;
+                width: 100%;
+                overflow: scroll;
+            }
+            button {
+                margin: 10px 10px 10px 10px;
+            }
+        </style>
+        <script type='text/javascript' src='jquery.js'></script>
+        <script type='text/javascript'>
+            var cursorX = 0;
+            var cursorY = 0;
+            function asp1() {
+                $('#x1').val(cursorX);
+                $('#y1').val(cursorY);
+            }
+            function asp2() {
+                $('#x2').val(cursorX);
+                $('#y2').val(cursorY);
+            }
+            function lineup() {
+                var x1_string = document.getElementById('x1').value;
+                var y1_string = document.getElementById('y1').value;
+                var x2_string = document.getElementById('x2').value;
+                var y2_string = document.getElementById('y2').value;
+                if (x1_string != '' && y1_string != '' && x2_string != '' && y2_string != '') {
+                    var x1_value = 1400 + 0.25 * eval(x1_string);
+                    var y1_value = 1400 + 0.25 * eval(y1_string);
+                    var x2_value = 1400 + 0.25 * eval(x2_string);
+                    var y2_value = 1400 + 0.25 * eval(y2_string);
+                    if (Math.abs(x1_value - x2_value) + Math.abs(y1_value - y2_value) >= 1) {
+                        var x3_value = 1400;
+                        var y3_value = 1400;
+                        if (Math.abs(x1_value - x2_value) >= Math.abs(y1_value - y2_value)) {
+                            if (x1_value < x2_value) {
+                                x3_value = 2800;
+                            } else {
+                                x3_value = 0;
+                            }
+                            y3_value = y2_value + (y2_value - y1_value) * (x3_value - x2_value) / (x2_value - x1_value);
+                        } else {
+                            if (y1_value < y2_value) {
+                                y3_value = 2800;
+                            } else {
+                                y3_value = 0;
+                            }
+                            x3_value = x2_value + (x2_value - x1_value) * (y3_value - y2_value) / (y2_value - y1_value);
+                        }
+                        var group = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+                        group.id = 'user';
+                        var line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                        line.setAttribute('x1', x1_value);
+                        line.setAttribute('y1', y1_value);
+                        line.setAttribute('x2', x2_value);
+                        line.setAttribute('y2', y2_value);
+                        line.setAttribute('stroke', 'crimson');
+                        group.appendChild(line);
+                        line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                        line.setAttribute('x1', x2_value);
+                        line.setAttribute('y1', y2_value);
+                        line.setAttribute('x2', x3_value);
+                        line.setAttribute('y2', y3_value);
+                        line.setAttribute('stroke', 'darkblue');
+                        group.appendChild(line);
+                        $('#main-svg').append(group);
+                    }
+                }
+            }
+            function undo() {
+                var userLines = $('#main-svg #user');
+                if (userLines.length > 0) {
+                    userLines.last().remove();
+                }
+            }
+            $(document).ready(function() {
+                $('#main-svg').click(function(event) {
+                    $('#cross-mark').attr('transform', 'translate(' + event.layerX + ' ' + event.layerY + ')');
+                    cursorX = 4 * (event.layerX - 1400);
+                    cursorY = 4 * (event.layerY - 1400);
+                    $('#coord').text('(' + cursorX + ',' + cursorY + ')');
+                });
+            });
+        </script>
+    </head>
+    <body>
+        <div id='svg-pane'>
+            <svg id='main-svg' width='2800' height='2800' xmlns='http://www.w3.org/2000/svg'>
+                <rect x='1362' y='1362' width='76' height='76' fill='plum'/>
+                <circle cx='1400' cy='1400' r='512' stroke-width='160' fill='none' stroke='lightblue'/>
+                <circle cx='1400' cy='1400' r='1280' stroke-width='160' fill='none' stroke='lightblue'/>
+                <line x1='0' y1='1144' x2='2800' y2='1144' stroke='gray' stroke-dasharray='16'/>
+                <line x1='0' y1='1400' x2='2800' y2='1400' stroke='gray'/>
+                <line x1='0' y1='1656' x2='2800' y2='1656' stroke='gray' stroke-dasharray='16'/>
+                <line x1='1144' y1='0' x2='1144' y2='2800' stroke='gray' stroke-dasharray='16'/>
+                <line x1='1400' y1='0' x2='1400' y2='2800' stroke='gray'/>
+                <line x1='1656' y1='0' x2='1656' y2='2800' stroke='gray' stroke-dasharray='16'/>
+                <g id='cross-mark' transform='translate(-32 -32)'>
+                    <line x1='0' y1='-16' x2='0' y2='-4' stroke='dimgray'/>
+                    <line x1='0' y1='16' x2='0' y2='4' stroke='dimgray'/>
+                    <line x1='-16' y1='0' x2='-4' y2='0' stroke='dimgray'/>
+                    <line x1='16' y1='0' x2='4' y2='0' stroke='dimgray'/>
+                    <text id='coord' x='0' y='-20' font-family='Consolas,monospace' font-size='20'>(?,?)</text>
+                </g>
+            </svg>
+        </div>
+        <div>x1=<input id='x1'/></div>
+        <div>y1=<input id='y1'/></div>
+        <div>x2=<input id='x2'/></div>
+        <div>y2=<input id='y2'/></div>
+        <div>
+            <button onclick='asp1()'>as P1</button>
+            <button onclick='asp2()'>as P2</button>
+            <button onclick='lineup()'>line up</button>
+            <button onclick='undo()'>undo</button>
+        </div>
+    </body>
+</html>
